@@ -1,0 +1,24 @@
+{
+  "companies": [
+    {
+      "id": "1",
+      "name": "Microsoft",
+      "location": "New York, NY"
+    },
+    {
+      "id": "2",
+      "name": "Amazon",
+      "location": "Philadelphia, PA"
+    },
+    {
+      "id": "bbf6",
+      "name": "Chewy",
+      "location": "remote"
+    },
+    {
+      "name": "Groupon",
+      "location": "remote",
+      "id": "v9APVS3"
+    }
+  ]
+}
