@@ -1,21 +1,25 @@
-# Sprint 1: Portfolio
+# Sprint 2: Hitlist
 
-<img src="https://i.imgur.com/CpaOdSD.png" height="40%" width="40%">
+<img src="https://imgur.com/0MkFIDf" height="40%" width="40%">
 
 ## How It's Made:
-HTML, CSS, Javascript, Node, Express, MongoDB
+HTML, CSS, Javascript, Node, REST API, JSON for backend server
 
-1. Dark Mode Toggle
-    - Implemented a button that allows users to switch between dark mode and light mode.
-    - Used React's useState hook to manage the mode state.
-    - Applied appropriate CSS classes to reflect the mode change.
-2. Component Breakdown
-    - Organized the project into multiple components.
-    - Ensured proper folder structure (components/ for reusable components).
+1. Companies should be saved in JSON Server.
+-Data is stored in db.json and managed via RESTful API calls.
+-Implemented a form to submit new company entries and save them to db.
+2. Each company entry should have a delete button to delete companies.
+-Use window.confirm() to ask for deletion confirmation before removing from db.
+3. User should be able to filter companies based on criteria (e.g., priority, location, or name).
+-Can search by location or company name and filters in real time.
+4. Implement error handling for at least one API request.
+-Empty/invalid entries as well as duplicates will throw an error.
+
+
 
 
 ## Lessons Learned:
-I built a new portfolio website using React with a dark mode and light mode toggle. This project helped me practice state management and component structuring while applying what I learned in parts 0 and 1 of FullStackOpen.
+I got hands-on experience with React and JSON Server, learning how to manage state, handle API requests, and debug data updates. Troubleshooting was tricky, but it made the connection between frontend and backend clearer. 
 
 
 ## Installation/Usage
@@ -23,3 +27,6 @@ I built a new portfolio website using React with a dark mode and light mode togg
 2. run `npm install`
 3. run `node server.js`
 4. Navigate to `localhost:5173`
+5. Open new terminal, run `npx json-server --watch db.json --port 3001`
+6. Navigate to `localhost:3001/companies`
+

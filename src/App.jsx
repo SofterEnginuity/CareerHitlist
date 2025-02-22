@@ -72,7 +72,7 @@ const filteredCompanies = companies.length > 0
 
 
   return (
-    <div>
+    <div class="hitlist">
       <h2>Hitlist</h2>
       
       <input 
