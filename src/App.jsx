@@ -1,112 +1,140 @@
-import { useState, useEffect } from 'react'
-import hitlistService from './services/hitlist'
+import { useState, useEffect } from "react";
+import hitlistService from "./services/hitlist";
+import axios from "axios";
 
-const App = () => {
-  const [companies, setCompanies] = useState([])
-  const [newName, setNewName] = useState('')
-  const [newLocation, setNewLocation] = useState('');
+const Hitlist = () => {
+  const [companies, setCompanies] = useState([]);
+  const [newCompany, setNewCompany] = useState("");
+  const [newLocation, setNewLocation] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [notification, setNotification] = useState({ message: null, type: "" });
 
-  const [searchTerm, setSearchTerm] = useState("")
-  
 
-  // Fetch companies when the page loads
   useEffect(() => {
-    hitlistService.getAll().then(initialCompanies => setCompanies(initialCompanies))
-  }, [])
-
-  // Handle adding a company
-  const addCompany = (event) => {
-    event.preventDefault();
-  
-    // Validation: Ensure name, priority, and location are not empty
-    if (!newName.trim()) {
-      alert("Please enter a valid company name.");
-      return;
-    }
-    
-  
-    if (!newLocation.trim()) {
-      alert("Please enter a valid location.");
-      return;
-    }
-  
-    const newCompany = { name: newName,  location: newLocation };
-  
-    hitlistService.create(newCompany)
-      .then(returnedCompany => {
-        setCompanies(companies.concat(returnedCompany));
-        setNewName('');
-        setNewLocation('');
-      })
-      .catch(error => {
-        alert("Error adding company. Please try again.");
-        console.error("Error:", error);
-      });
+    axios.get("http://localhost:3001/companies").then((response) => {
+      setCompanies(response.data);
+    });
+  }, []);
+  const showNotification = (message, type) => {
+    setNotification({ message, type }); // Store message & type
+    setTimeout(() => {
+      setNotification({ message: null, type: "" }); // Reset after 3 sec
+    }, 3000);
   };
   
 
-  // Handle delete
-  const handleDelete = (id, name) => {
-    if (window.confirm(`Delete ${name}?`)) {
-      hitlistService.remove(id)
-        .then(() => {
-          setCompanies(companies.filter(company => company.id !== id))
-        })
-        .catch(error => {
-          alert("Failed to delete company!")
-          console.error("Delete error:", error)
-        })
+  const addCompany = (event) => {
+    event.preventDefault();
+
+    const existingCompany = companies.find(
+      (company) => company.name === newCompany
+    );
+
+    if (existingCompany) {
+      const confirmUpdate = window.confirm(
+        `${newCompany} is already on the list. Update location?`
+      );
+
+      if (confirmUpdate) {
+        const updatedCompany = { ...existingCompany, location: newLocation };
+
+        hitlistService.update(existingCompany.id, updatedCompany).then(() => {
+          setCompanies(
+            companies.map((c) => (c.id !== existingCompany.id ? c : updatedCompany))
+          );
+          setNewCompany("");
+          setNewLocation("");
+          showNotification(`Updated ${updatedCompany.name}`);
+        });
+      }
+    } else {
+      const newEntry = { name: newCompany, location: newLocation };
+
+      hitlistService.create(newEntry).then((returnedCompany) => {
+        setCompanies(companies.concat(returnedCompany));
+        setNewCompany("");
+        setNewLocation("");
+        showNotification(`Added ${returnedCompany.name}`);
+      });
     }
-  }
+  };
 
-  // Filter companies
-// Filter companies safely
-const filteredCompanies = companies.length > 0 
-  ? companies.filter(company => 
-      company.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.priority?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.location?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  : [];
+  const handleDelete = (id, name) => {
+    if (window.confirm(`Remove ${name} from the list?`)) {
+      hitlistService.remove(id)
+      .then(() => {
+        setCompanies(companies.filter((company) => company.id !== id));
+        showNotification(`Deleted ${name}`, "success");
+      })
+      .catch((error) => {
+        showNotification(`Error: ${name} was already removed from the server`, "error");
+        setCompanies(companies.filter((company) => company.id !== id)); // Update UI
+      });
+    
+    }
+  };
 
-
+  const filteredCompanies = companies.filter(
+    (company) =>
+      company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.location.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div class="hitlist">
+    <div>
       <h2>Hitlist</h2>
-      
-      <input 
-  type="text" 
-  placeholder="Enter a Name or Location" 
-  value={searchTerm} 
-  onChange={(e) => {
-    setSearchTerm(e.target.value);
-    console.log("Current search term:", e.target.value); // Debugging
-  }} 
-/>
+      {notification.message && (
+  <div
+    style={{
+      backgroundColor: notification.type === "error" ? "lightcoral" : "lightblue",
+      padding: "10px",
+      border: notification.type === "error" ? "1px solid red" : "1px solid blue",
+      color: notification.type === "error" ? "darkred" : "darkblue",
+      marginBottom: "10px",
+    }}
+  >
+    {notification.message}
+  </div>
+)}
+
+      <input
+        type="text"
+        placeholder="Search companies..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
 
       <form onSubmit={addCompany}>
         <div>
-          Name: <input value={newName} onChange={(e) => setNewName(e.target.value)} />
+          Company: <input value={newCompany} onChange={(e) => setNewCompany(e.target.value)} />
         </div>
         <div>
           Location: <input value={newLocation} onChange={(e) => setNewLocation(e.target.value)} />
         </div>
-
         <button type="submit">Add</button>
       </form>
 
       <h3>Companies</h3>
       <ul>
-        {filteredCompanies.map(company => (
+        {filteredCompanies.map((company) => (
           <li key={company.id}>
-            {company.name}- Location: {company.location}
+            {company.name} - {company.location}
             <button onClick={() => handleDelete(company.id, company.name)}>Delete</button>
           </li>
         ))}
       </ul>
     </div>
-  )
-}
+  );
+};
 
-export default App
+const styles = {
+  notification: {
+    backgroundColor: "lightblue",
+    padding: "10px",
+    border: "1px solid blue",
+    color: "darkblue",
+    marginBottom: "10px",
+  },
+};
+
+export default Hitlist;
